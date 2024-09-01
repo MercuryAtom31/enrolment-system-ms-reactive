@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.lang.Thread.currentThread;
@@ -24,7 +25,7 @@ public class StudentClientSynchronous {
 
     private final List<Integer> range = IntStream.rangeClosed(1, 1000)
             .boxed()
-            .toList();
+            .collect(Collectors.toList());
 
 
     public StudentClientSynchronous(RestTemplate restTemplate, ObjectMapper mapper,
@@ -84,7 +85,8 @@ enrollments-service  | 2024-08-13T19:46:23.562Z  INFO 1 --- [enrollments-service
                     log.info("Current thread running " + currentThread());
                     return getStudentSync(i);
                 })
-                .toList();
+                //.toList();
+                .collect(Collectors.toList());
     }
 
 }

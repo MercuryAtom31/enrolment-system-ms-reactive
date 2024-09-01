@@ -27,18 +27,23 @@ public class CourseClient {
         return webClient.get()
                 .uri("/{courseId}", courseId)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, httpErrorInfo ->
-                        httpErrorInfo.bodyToMono(HttpErrorInfo.class)
+                .onStatus(HttpStatusCode::isError,
+                        httpErrorInfo -> httpErrorInfo
+                                .bodyToMono(HttpErrorInfo.class)
                                 .flatMap(error -> {
                                     switch (httpErrorInfo.statusCode().value()) {
-                                        case 404: return Mono.error(new NotFoundException("Course not found: " + error.getMessage()));
-                                        case 422: return Mono.error(new InvalidInputException("Invalid input: " + error.getMessage()));
-                                        default: return Mono.error(new IllegalArgumentException("Unexpected error: " + error.getMessage()));
+                                        case 404:
+                                            return Mono.error(new NotFoundException("Course ID not found: " + courseId));
+                                        case 422:
+                                            return Mono.error(new InvalidInputException("Invalid Course ID: " + courseId));
+                                        default:
+                                            return Mono.error(new IllegalArgumentException("Unexpected error: " + error.getMessage()));
                                     }
                                 })
                 )
                 .bodyToMono(CourseResponseModel.class);
     }
+
 
     // Add more methods here if needed, ensuring they follow the same exception handling pattern
 }

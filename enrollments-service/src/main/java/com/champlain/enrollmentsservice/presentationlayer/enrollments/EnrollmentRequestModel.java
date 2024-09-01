@@ -11,8 +11,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EnrollmentRequestModel {
+//    private Integer enrollmentYear;
+//    private Semester semester;
+//    private String studentId;
+//    private String courseId;
     private Integer enrollmentYear;
     private Semester semester;
+
     private String studentId;
+    private String studentFirstName;
+    private String studentLastName;
+
     private String courseId;
+    private String courseNumber;
+    private String courseName;
 }

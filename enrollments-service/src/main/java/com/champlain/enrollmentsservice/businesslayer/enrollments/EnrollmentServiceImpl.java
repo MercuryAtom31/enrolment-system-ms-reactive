@@ -1,6 +1,7 @@
 package com.champlain.enrollmentsservice.businesslayer.enrollments;
 
 import com.champlain.enrollmentsservice.dataaccesslayer.EnrollmentRepository;
+import com.champlain.enrollmentsservice.dataaccesslayer.Semester;
 import com.champlain.enrollmentsservice.domainclientlayer.Courses.CourseClient;
 import com.champlain.enrollmentsservice.domainclientlayer.Students.StudentClientAsynchronous;
 import com.champlain.enrollmentsservice.presentationlayer.enrollments.EnrollmentRequestModel;
@@ -64,27 +65,32 @@ public class EnrollmentServiceImpl implements EnrollmentService{
                 .map(EntityModelUtil::toEnrollmentResponseModel);
     }
 
-    @Override
-    public Mono<EnrollmentResponseModel> updateEnrollmentByEnrollmentId(Mono<EnrollmentRequestModel> enrollmentRequestModel, String enrollmentId) {
-        return enrollmentRepository.findEnrollmentByEnrollmentId(enrollmentId)
-                .flatMap(r -> enrollmentRepository.findEnrollmentByEnrollmentId(enrollmentId)
-                        .flatMap(existingEnrollment -> {
-                            existingEnrollment.setEnrollmentId(r.getEnrollmentId());
-                            existingEnrollment.setEnrollmentYear(r.getEnrollmentYear());
-                            existingEnrollment.setSemester(r.getSemester());
-                            existingEnrollment.setStudentId(r.getStudentId());
-                            existingEnrollment.setStudentFirstName(r.getStudentFirstName());
-                            existingEnrollment.setStudentLastName(r.getStudentLastName());
-                            existingEnrollment.setCourseId(r.getCourseId());
-                            existingEnrollment.setCourseNumber(r.getCourseNumber());
-                            existingEnrollment.setCourseName(r.getCourseName());
-
-                            return enrollmentRepository.save(existingEnrollment);
-                        })
-                        .map(EntityModelUtil::toEnrollmentResponseModel)
-                );
-    }
-
+@Override
+public Mono<EnrollmentResponseModel> updateEnrollmentByEnrollmentId(Mono<EnrollmentRequestModel> enrollmentRequestModel, String enrollmentId) {
+    return enrollmentRepository.findEnrollmentByEnrollmentId(enrollmentId)
+            .switchIfEmpty(Mono.error(new NotFoundException("Enrollment ID not found: " + enrollmentId)))
+            .flatMap(existingEnrollment -> enrollmentRequestModel
+                    .flatMap(requestModel -> {
+                        // Calling CourseClient to ensure the courseId exists
+                        return courseClient.getCourseByCourseId(requestModel.getCourseId())
+                                .switchIfEmpty(Mono.error(new NotFoundException("Course ID not found: " + requestModel.getCourseId())))
+                                .thenReturn(requestModel);
+                    })
+                    .flatMap(requestModel -> {
+                        // Updating the enrollment with the new data from the request model
+                        existingEnrollment.setEnrollmentYear(requestModel.getEnrollmentYear());
+                        existingEnrollment.setSemester(requestModel.getSemester());
+                        existingEnrollment.setStudentId(requestModel.getStudentId());
+                        existingEnrollment.setStudentFirstName(requestModel.getStudentFirstName());
+                        existingEnrollment.setStudentLastName(requestModel.getStudentLastName());
+                        existingEnrollment.setCourseId(requestModel.getCourseId());
+                        existingEnrollment.setCourseNumber(requestModel.getCourseNumber());
+                        existingEnrollment.setCourseName(requestModel.getCourseName());
+                        return enrollmentRepository.save(existingEnrollment);
+                    })
+                    .map(EntityModelUtil::toEnrollmentResponseModel)
+            );
+}
 
     private Mono<RequestContext> studentRequestResponse(RequestContext rc) {
         return this.studentClient

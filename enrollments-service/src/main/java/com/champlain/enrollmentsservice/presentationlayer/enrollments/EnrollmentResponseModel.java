@@ -14,7 +14,6 @@ public class EnrollmentResponseModel {
 
     private String enrollmentId;
     private Integer enrollmentYear;
-
     private Semester semester;
 
     private String studentId;
