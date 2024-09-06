@@ -27,32 +27,18 @@ public class CourseClient {
         return webClient.get()
                 .uri("/{courseId}", courseId)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError,
-                        httpErrorInfo -> httpErrorInfo
-                                .bodyToMono(HttpErrorInfo.class)
-                                .flatMap(error -> {
-                                    switch (httpErrorInfo.statusCode().value()) {
-                                        case 404:
-                                            return Mono.error(new NotFoundException("Course ID not found: " + courseId));
-                                        case 422:
-                                            return Mono.error(new InvalidInputException("Invalid Course ID: " + courseId));
-                                        default:
-                                            return Mono.error(new IllegalArgumentException("Unexpected error: " + error.getMessage()));
-                                    }
-                                })
-                )
+                .onStatus(HttpStatusCode::isError, error ->
+                        switch (error.statusCode().value()) {
+                            case 404 -> Mono.error(new NotFoundException("CourseId not found: " + courseId));
+                            case 422 -> Mono.error(new InvalidInputException("CourseId invalid: " + courseId));
+                            default -> Mono.error(new IllegalArgumentException("Something went wrong"));
+                        })
                 .bodyToMono(CourseResponseModel.class);
     }
 
 
     // Add more methods here if needed, ensuring they follow the same exception handling pattern
 }
-
-
-
-
-
-
 
 
 //package com.champlain.enrollmentsservice.domainclientlayer.Courses;
