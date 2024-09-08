@@ -1,5 +1,7 @@
 package com.champlain.enrollmentsservice.presentationlayer;
 
+import com.champlain.enrollmentsservice.MockServerConfigCoursesService;
+import com.champlain.enrollmentsservice.MockServerConfigStudentsService;
 import com.champlain.enrollmentsservice.dataaccesslayer.Enrollment;
 import com.champlain.enrollmentsservice.dataaccesslayer.EnrollmentRepository;
 import com.champlain.enrollmentsservice.dataaccesslayer.Semester;
@@ -32,6 +34,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EnrollmentControllerIntegrationWithWireMockTest {
 
+
     @Autowired
     private WebTestClient webTestClient;
     @Autowired
@@ -39,6 +42,14 @@ public class EnrollmentControllerIntegrationWithWireMockTest {
     private MockServerConfigStudentsService mockServerConfigStudentsService;
     private MockServerConfigCoursesService mockServerConfigCoursesService;
 
+    //Added these fields.
+    private static final String NON_EXISTING_STUDENTID = "154tr995-fs94-4th1-5rr5-8f6a571fz0bb";
+    private static final String INVALID_STUDENTID = "Student123";
+
+    private static final String NON_EXISTING_COURSEID = "206bf934-rf95-4hh1-9fg5-6h6a341fb3zz";
+    private static final String INVALID_COURSEID = "Course123";
+
+    //End of added fields.
     private final Long dbSize = 2L;
     private final String NON_EXISTING_ENROLLMENTID = "169de995-ef94-4dd1-9ea9-8f6a571fb0dd";
     private final String INVALID_ENROLLMENTID = "Enrollment123";
