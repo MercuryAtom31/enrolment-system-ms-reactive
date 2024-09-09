@@ -51,6 +51,7 @@ public class EnrollmentRepositoryIntegrationTest {
                 .verifyComplete();
     }
 
+    @Test
     void findEnrollmentByEnrollmentId_withExistingId_shouldReturnEnrollment() {
         StepVerifier.create(enrollmentRepository.findEnrollmentByEnrollmentId(enrollment1.getEnrollmentId()))
                 .consumeNextWith(foundEnrollment -> {
@@ -62,7 +63,11 @@ public class EnrollmentRepositoryIntegrationTest {
     }
 
     @Test
-    void findEnrollmentByEnrollmentId_withNonExistingId_shouldReturnEmptyMono(){
+    void findEnrollmentByEnrollmentId_withNonExistingId_shouldReturnEmptyMono() {
+        String nonExistingEnrollmentId = "non-existing-id";
 
+        StepVerifier.create(enrollmentRepository.findEnrollmentByEnrollmentId(nonExistingEnrollmentId))
+                .expectNextCount(0)  // Since it's a Mono, we expect no values
+                .verifyComplete();
     }
 }

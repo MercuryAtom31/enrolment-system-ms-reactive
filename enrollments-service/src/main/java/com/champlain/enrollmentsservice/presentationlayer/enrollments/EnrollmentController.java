@@ -36,14 +36,26 @@ public class EnrollmentController {
         return enrollmentService.getAllEnrollments();
     }
 
+    //Old method.
+//    @GetMapping(value = "/{enrollmentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Mono<ResponseEntity<EnrollmentResponseModel>> getEnrollmentByEnrollmentId(@PathVariable String enrollmentId) {
+//        return Mono.just(enrollmentId)
+//                .filter(id -> id.length() == 36)
+//                .switchIfEmpty(Mono.error(new InvalidInputException("Provided Enrollment ID is invalid: " + enrollmentId)))
+//                .flatMap(enrollmentService::getEnrollmentByEnrollmentId)
+//                .map(ResponseEntity::ok);
+//    }
+    //New method.
     @GetMapping(value = "/{enrollmentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<EnrollmentResponseModel>> getEnrollmentByEnrollmentId(@PathVariable String enrollmentId) {
         return Mono.just(enrollmentId)
                 .filter(id -> id.length() == 36)
                 .switchIfEmpty(Mono.error(new InvalidInputException("Provided Enrollment ID is invalid: " + enrollmentId)))
                 .flatMap(enrollmentService::getEnrollmentByEnrollmentId)
-                .map(ResponseEntity::ok);
+                .map(ResponseEntity::ok)
+                .onErrorResume(NotFoundException.class, ex -> Mono.just(ResponseEntity.notFound().build()));  // Handling 404 Not Found here
     }
+
 
     @DeleteMapping(value = "/{enrollmentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<EnrollmentResponseModel>> deleteEnrollmentByEnrollmentId(@PathVariable String enrollmentId){

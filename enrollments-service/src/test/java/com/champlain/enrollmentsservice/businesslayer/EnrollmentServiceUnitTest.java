@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -19,11 +21,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static reactor.core.publisher.Mono.when;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class EnrollmentServiceUnitTest {
-
     @InjectMocks
     private EnrollmentServiceImpl enrollmentService;
     @Mock
@@ -41,6 +42,7 @@ public class EnrollmentServiceUnitTest {
             .studentId("student123")
             .courseId("course123")
             .build();
+
     Enrollment enrollment2 = Enrollment.builder()
             .id(UUID.randomUUID().toString())
             .enrollmentId(UUID.randomUUID().toString())
@@ -56,9 +58,11 @@ public class EnrollmentServiceUnitTest {
         when(enrollmentRepository.findEnrollmentByEnrollmentId(enrollment1.getEnrollmentId()))
                 .thenReturn(Mono.just(enrollment1));
         //act
-        Mono<EnrollmentResponseModel> enrollment = enrollmentService.getEnrollmentByEnrollmentId(enrollment1.getEnrollmentId());
+        Mono<EnrollmentResponseModel> enrollment =
+                enrollmentService.getEnrollmentByEnrollmentId(enrollment1.getEnrollmentId());
         //assert
-        StepVerifier.create(enrollment)
+        StepVerifier
+                .create(enrollment)
                 .expectNextMatches(enrollmentResponseModel -> {
                     assertNotNull(enrollmentResponseModel.getEnrollmentId());
                     assertEquals(enrollmentResponseModel.getEnrollmentYear(),
@@ -84,7 +88,40 @@ public class EnrollmentServiceUnitTest {
 
     @Test
     public void whenDeleteEnrollmentById_thenDeleteEnrollmentAndReturnEnrollmentResponseModel(){
+        // Arrange
+        String enrollmentId = UUID.randomUUID().toString();
 
+        Enrollment enrollment = Enrollment.builder()
+                .enrollmentId(enrollmentId)
+                .enrollmentYear(2023)
+                .semester(Semester.FALL)
+                .studentId("student123")
+                .courseId("course123")
+                .build();
+
+        when(enrollmentRepository.findEnrollmentByEnrollmentId(enrollmentId))
+                .thenReturn(Mono.just(enrollment));
+
+        when(enrollmentRepository.delete(enrollment)).thenReturn(Mono.empty());
+
+        // Act
+        Mono<EnrollmentResponseModel> result = enrollmentService.deleteEnrollmentByEnrollmentId(enrollmentId);
+
+        // Assert
+        StepVerifier.create(result)
+                .expectNextMatches(enrollmentResponseModel -> {
+                    assertNotNull(enrollmentResponseModel);
+                    assertEquals(enrollmentId, enrollmentResponseModel.getEnrollmentId());
+                    assertEquals(2023, enrollmentResponseModel.getEnrollmentYear());
+                    assertEquals(Semester.FALL, enrollmentResponseModel.getSemester());
+                    assertEquals("student123", enrollmentResponseModel.getStudentId());
+                    assertEquals("course123", enrollmentResponseModel.getCourseId());
+                    return true;
+                })
+                .verifyComplete();
+
+        verify(enrollmentRepository, times(1)).delete(enrollment);
     }
 }
+
 

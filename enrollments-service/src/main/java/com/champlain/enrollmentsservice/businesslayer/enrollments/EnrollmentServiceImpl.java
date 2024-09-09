@@ -65,7 +65,7 @@ public class EnrollmentServiceImpl implements EnrollmentService{
                 .map(EntityModelUtil::toEnrollmentResponseModel);
     }
 
-@Override
+    @Override
 public Mono<EnrollmentResponseModel> updateEnrollmentByEnrollmentId(Mono<EnrollmentRequestModel> enrollmentRequestModel, String enrollmentId) {
     return enrollmentRepository.findEnrollmentByEnrollmentId(enrollmentId)
             .switchIfEmpty(Mono.error(new NotFoundException("Enrollment ID not found: " + enrollmentId)))

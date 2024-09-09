@@ -13,6 +13,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+/**
+ * This class tests the integration of your CourseRepository
+ * with the database using the R2DBC
+ * (Reactive Relational Database Connectivity) framework.
+ */
 @DataR2dbcTest
 @ActiveProfiles("test")
 public class CourseRepositoryIntegrationTest {
@@ -23,6 +28,10 @@ public class CourseRepositoryIntegrationTest {
     @Autowired
     private DatabaseClient databaseClient;
 
+    /**
+     * This method runs before each test to clear all records from the CourseRepository.
+     * This ensures that each test starts with an empty database.
+     */
     @BeforeEach
     public void setUpDB(){
         StepVerifier
@@ -46,6 +55,12 @@ public class CourseRepositoryIntegrationTest {
 
         StepVerifier
                 .create(courseRepository.save(course))
+                /**
+                 * .consumeNextWith(), it takes the next value that is emitted by the stream
+                 * (in this case, the course that was saved or found)
+                 * and allows you to do something with it,
+                 * like checking if it's correct or meets certain conditions.
+                 */
                 .consumeNextWith(insertedCourse -> {
                     assertNotNull(insertedCourse);
                     assertEquals(course.getCourseId(), insertedCourse.getCourseId());
@@ -64,6 +79,13 @@ public class CourseRepositoryIntegrationTest {
 
     @Test
     void findCourseByCourseId_shouldFailWhenNonExistingId(){
+        // Arrange
+        String nonExistingCourseId = UUID.randomUUID().toString();
 
+        // Act & Assert
+        StepVerifier
+                .create(courseRepository.findCourseByCourseId(nonExistingCourseId))
+                .expectNextCount(0)  // Expecting no values to be emitted (since the course doesn't exist)
+                .verifyComplete();
     }
 }

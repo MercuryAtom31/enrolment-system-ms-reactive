@@ -9,6 +9,7 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 import static org.mockserver.model.JsonBody.json;
 
+
 public class MockServerConfigStudentsService {
 
     private static final Integer MOCK_SERVER_PORT = 7002;
@@ -50,6 +51,36 @@ public class MockServerConfigStudentsService {
                 .respond(
                         response()
                                 .withStatusCode(HttpStatus.NOT_FOUND.value())
+                );
+    }
+
+    //MISSING METHODS:
+
+    public void registerGetStudent2ByStudentIdEndpoint() {
+        mockServerClient
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/api/v1/students/" + "1f538db7-320a-4415-bad4-e1d44518b1ff")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(200)
+                                .withBody(json("{\"studentId\":\"1f538db7-320a-4415-bad4-e1d44518b1ff\",\"firstName\":\"Willis\",\"lastName\":\"Faraday\",\"program\":\"Pure and Applied Sciences\",\"stuff\":\"stuff\"}", MediaType.APPLICATION_JSON))
+                );
+    }
+
+    public void registerGetStudent_INVALID_ByStudentIdEndpoint() {
+        mockServerClient
+                .when(
+                        request()
+                                .withMethod("GET")
+                                .withPath("/api/v1/students/invalid-id")
+                )
+                .respond(
+                        response()
+                                .withStatusCode(422)
+                                .withBody("{\"message\":\"Invalid student ID\"}")
                 );
     }
 
